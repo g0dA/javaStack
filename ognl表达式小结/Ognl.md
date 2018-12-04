@@ -67,6 +67,7 @@ struts2自己的安全机制上，现在已经默认禁止了`静态方法调用
 
 `ognl`的执行需要一个`OgnlContext`，当前的`OgnlContext`的内部属性已经完全确定了，禁止`静态方法`调用，黑名单都已经被加载，那就要想办法清除，也就是修改`上下文`的一个属性。
 首先是`重获静态方法调用`，以前是通过内部方法`setAllowStaticMethodAccess`，后来被删了，现在就换一种方式就是`setMemberAccess`，但是这个方法在黑名单里，就要先去清除黑名单，要想清除，首先得去指定到这个属性，`com.opensymphony.xwork2.ognl.OgnlUtil`下的`getExcludedClasses()`方法和`getExcludedPackageNames()`何以获取到这个属性集合，然后`clear()`便是，但是我们要想调用方法就得先有`OgnUtil`这个对象，那就通过`getInstance()`方法实例化出来，但是这个方法又是`com.opensymphony.xwork2.ActionContext.container`的，因此得先获取到这个类的对象，而`OgnlContext`中是有这个对象的，只不过在`ValueStack`里，因此就是`#context['com.opensymphony.xwork2.ActionContext.container']`，这儿的`com.opensymphony.xwork2.ActionContext.container`是一个`key`，而不是具体路径，不过2.3.34以后没有`#context`这个`key`了，因此还是`#request['struts.valueStack']`靠谱。
+> getInstance()这是有限制的，实例得是容器托管的，具体信息可以看一下[Struts2源码学习](https://www.cnblogs.com/forwrader/p/7659708.html)，不过在深入就是开发的知识了。
 
 3.34之前版本：
 ```
